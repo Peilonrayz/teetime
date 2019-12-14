@@ -9,7 +9,7 @@ with open('README.md', 'r') as f:
 
 setup(
     name='teetime',
-    version='0.0.1',
+    version='0.0.2',
     license='MIT',
     description='Add tee like functionally to Popen',
     long_description=LONG_DESCRIPTION,
