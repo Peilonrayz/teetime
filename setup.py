@@ -16,7 +16,11 @@ setup(
     long_description_content_type="text/markdown",
     author='Peilonrayz',
     author_email='peilonrayz@gmail.com',
-    url='https://github.com/Peilonrayz/teetime',
+    url='https://github.com/Peilonrayz/Teetime',
+    project_urls={
+        'Source': 'https://github.com/Peilonrayz/Teetime',
+        'Tracker': 'https://github.com/Peilonrayz/Teetime/issues',
+    },
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,

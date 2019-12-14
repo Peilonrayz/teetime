@@ -2,7 +2,7 @@
 
 [![Master Build Status](https://travis-ci.org/Peilonrayz/teetime.svg?branch=master)](https://travis-ci.org/Peilonrayz/teetime)
 
-Simple tee like functionally for `subprocess.Popen`.
+Adding tee like functionally to `subprocess.Popen`.
 
 ## Installation
 
@@ -12,7 +12,7 @@ $ pip install teetime
 
 ## How to use
 
-There is some documentation in the code. Common usage is:
+There is some documentation in the code, and can be generated with `tox -e docs`. Common usage is:
 
 ```python
 import sys
@@ -27,7 +27,7 @@ with open('log.txt', 'wb') as f:
     process.wait()
 ```
 
-**Note**: `pope_call` blocks until
+**Note**: `popen_call` blocks until IO is complete. If you have no IO, `stdout=()`, then it will not block. This is why you still need `process.wait()`.
 
 # Development
 
