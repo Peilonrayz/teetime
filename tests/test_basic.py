@@ -3,6 +3,7 @@
 import sys
 import tempfile
 import os.path
+import queue
 
 import teetime
 
@@ -31,3 +32,32 @@ def test_basic():
             b'doWlloHer\r\nHlWd\r\nlHl o!lreo\r\n!\r\noWd H\r\n'
             b'lHlWd\r\ndelWlHlor\r\n olrdl!He\r\nHolWlloe\r\n!l\r\n'
         )
+
+
+def _iter_queue(q):
+    while not q.empty():
+        yield q.get()
+
+
+def test_queue():
+    """Basic test."""
+    q = queue.Queue()
+    process = teetime.popen_call(
+        ['python', os.path.join(CWD, 'test.py')],
+        stdout=(q,),
+        stderr=(q,),
+    )
+    process.wait()
+
+    assert list(_iter_queue(q)) == [
+        b'doWlloHer\r\n',
+        b'HlWd\r\n',
+        b'lHl o!lreo\r\n',
+        b'!\r\n',
+        b'oWd H\r\n',
+        b'lHlWd\r\n',
+        b'delWlHlor\r\n',
+        b' olrdl!He\r\n',
+        b'HolWlloe\r\n',
+        b'!l\r\n',
+    ]
