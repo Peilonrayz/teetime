@@ -1,42 +1,41 @@
 #!/usr/bin/env python
+from setuptools import find_packages, setup
 
-"""setup.py."""
-
-from setuptools import setup, find_packages
-
-with open('README.md', 'r') as f:
+with open("README.rst") as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
-    name='teetime',
-    version='0.0.2',
-    license='MIT',
-    description='Add tee like functionally to Popen',
+    name="teetime",
+    version="0.0.2",
+    license="MIT",
+    description="Add tee like functionally to Popen",
     long_description=LONG_DESCRIPTION,
-    long_description_content_type="text/markdown",
-    author='Peilonrayz',
-    author_email='peilonrayz@gmail.com',
-    url='https://github.com/Peilonrayz/Teetime',
+    long_description_content_type="text/x-rst",
+    author="Peilonrayz",
+    author_email="peilonrayz@gmail.com",
+    url="https://peilonrayz.github.io/teetime",
     project_urls={
-        'Source': 'https://github.com/Peilonrayz/Teetime',
-        'Tracker': 'https://github.com/Peilonrayz/Teetime/issues',
+        "Bug Tracker": "https://github.com/Peilonrayz/teetime/issues",
+        "Documentation": "https://peilonrayz.github.io/teetime",
+        "Source Code": "https://github.com/Peilonrayz/teetime",
     },
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     include_package_data=True,
     zip_safe=False,
-    keywords='tee popen command',
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.7',
-    ],
     install_requires=[],
-    extras_require={
-        'dev':  [
-            'tox',
-        ]
-    },
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+    ],
+    keywords="tee popen command",
+    # entry_points={"console_scripts": ["teetime=teetime.__main__:main"]},
 )
