@@ -1,4 +1,4 @@
-Welcome to teetime's documentation!
+Welcome to TeeTime's documentation!
 =======================================
 
 .. toctree::

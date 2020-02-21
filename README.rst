@@ -1,4 +1,4 @@
-teetime
+TeeTime
 =======
 
 .. image:: https://travis-ci.com/Peilonrayz/teetime.svg?branch=master
@@ -57,4 +57,4 @@ To run all tests run ``nox``. No venv is needed; nox makes all of them for us.
 License
 -------
 
-teetime is available under the MIT license.
+TeeTime is available under the MIT license.

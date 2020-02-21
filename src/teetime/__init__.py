@@ -38,21 +38,19 @@ modify the following to suite your needs.
 
 from __future__ import annotations
 
-from typing import (
-    Any, Callable, Iterator, List, Optional, Sequence, Tuple, Type
-)
 import collections
 import io
 import queue
 import subprocess
 import threading
+from typing import Any, Callable, Iterator, List, Optional, Sequence, Tuple, Type
 
 QUEUE_SENTINEL = object()
-FILE_SENTINEL = b''
+FILE_SENTINEL = b""
 
 TSink = Callable[[bytes], None]
-_Threads = collections.namedtuple('Threads', 'out, err, both, queue')
-_Sinks = collections.namedtuple('Sinks', 'out, err, both')
+_Threads = collections.namedtuple("Threads", "out, err, both, queue")
+_Sinks = collections.namedtuple("Sinks", "out, err, both")
 
 
 class Threads(_Threads):
@@ -80,10 +78,7 @@ class Threads(_Threads):
     queue: queue.Queue
 
     def __new__(
-        cls,
-        process: subprocess.Popen,
-        sinks: Sinks,
-        flush: bool = True,
+        cls, process: subprocess.Popen, sinks: Sinks, flush: bool = True,
     ) -> Threads:
         """
         Create Threads from an active process and sinks.
@@ -107,35 +102,28 @@ class Threads(_Threads):
         if both:
             _queue = queue.Queue()
             b_thread = cls._make_thread(
-                target=cls._handle_sinks,
-                args=(iter(_queue.get, QUEUE_SENTINEL), both)
+                target=cls._handle_sinks, args=(iter(_queue.get, QUEUE_SENTINEL), both)
             )
             if out is None:
-                raise ValueError('both is defined, but out is None')
+                raise ValueError("both is defined, but out is None")
             if err is None:
-                raise ValueError('both is defined, but err is None')
+                raise ValueError("both is defined, but err is None")
             out += (_queue.put,)
             err += (_queue.put,)
 
         if out:
             o_thread = cls._make_thread(
                 target=cls._handle_sinks,
-                args=(iter(process.stdout.readline, FILE_SENTINEL), out)
+                args=(iter(process.stdout.readline, FILE_SENTINEL), out),
             )
 
         if err:
             e_thread = cls._make_thread(
                 target=cls._handle_sinks,
-                args=(iter(process.stderr.readline, FILE_SENTINEL), err)
+                args=(iter(process.stderr.readline, FILE_SENTINEL), err),
             )
 
-        return _Threads.__new__(
-            cls,
-            o_thread,
-            e_thread,
-            b_thread,
-            _queue
-        )
+        return _Threads.__new__(cls, o_thread, e_thread, b_thread, _queue)
 
     def __enter__(self) -> Threads:
         """Context manager pattern."""
@@ -160,12 +148,7 @@ class Threads(_Threads):
             for sink in sinks:
                 sink(segment)
 
-    def join(
-        self,
-        out: bool = True,
-        err: bool = True,
-        both: bool = False,
-    ) -> None:
+    def join(self, out: bool = True, err: bool = True, both: bool = False,) -> None:
         """Conveniently join threads."""
         if out and self.out is not None:
             self.out.join()
@@ -182,9 +165,11 @@ class Threads(_Threads):
 
 def _flushed_write(sink: Any) -> TSink:
     """Flush on write."""
+
     def write(value: bytes) -> None:
         sink.write(value)
         sink.flush()
+
     return write
 
 
@@ -217,28 +202,17 @@ class Sinks(_Sinks):
         return _Sinks.__new__(cls, out, err, both)
 
     def run(
-        self,
-        *args,
-        flush: bool = True,
-        threads: Type[Threads] = Threads,
-        **kwargs,
+        self, *args, flush: bool = True, threads: Type[Threads] = Threads, **kwargs,
     ) -> subprocess.Popen:
         """Conveniently create and execute a process and threads."""
         process = self.popen(*args, **kwargs)
         self.run_threads(process, flush=flush, threads=threads)
         return process
 
-    def popen(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> subprocess.Popen:
+    def popen(self, *args: Any, **kwargs: Any,) -> subprocess.Popen:
         """Conveniently create a process with out and err defined."""
         return subprocess.Popen(  # type: ignore
-            *args,
-            stdout=self.popen_out,
-            stderr=self.popen_err,
-            **kwargs,
+            *args, stdout=self.popen_out, stderr=self.popen_err, **kwargs,
         )
 
     @property
@@ -258,11 +232,7 @@ class Sinks(_Sinks):
         threads: Type[Threads] = Threads,
     ) -> None:
         """Conveniently create the threads and execute process."""
-        with self.make_threads(
-            process,
-            flush=flush,
-            threads=threads,
-        ) as _threads:
+        with self.make_threads(process, flush=flush, threads=threads,) as _threads:
             _threads.join()
         self.flush()
         self.reset_head()
@@ -282,14 +252,14 @@ class Sinks(_Sinks):
             if sinks is None:
                 continue
             for sink in sinks:
-                if hasattr(sink, 'flush'):
+                if hasattr(sink, "flush"):
                     sink.flush()
 
     def reset_head(self) -> None:
         """Reset the head of all sinks."""
         for sinks in self:
             for sink in sinks or []:
-                if hasattr(sink, 'seek'):
+                if hasattr(sink, "seek"):
                     try:
                         sink.seek(0)
                     except io.UnsupportedOperation:
@@ -297,8 +267,7 @@ class Sinks(_Sinks):
 
     @staticmethod
     def _to_callback(
-        sinks: Optional[List[Any]],
-        flush: bool = True,
+        sinks: Optional[List[Any]], flush: bool = True,
     ) -> Optional[Tuple[TSink, ...]]:
         """Convert sinks to a callback."""
         if sinks is None:
@@ -307,18 +276,17 @@ class Sinks(_Sinks):
         for sink in sinks:
             if isinstance(sink, queue.Queue):
                 callbacks.append(sink.put)
-            elif hasattr(sink, 'write'):
-                if flush and hasattr(sink, 'flush'):
+            elif hasattr(sink, "write"):
+                if flush and hasattr(sink, "flush"):
                     callbacks.append(_flushed_write(sink))
                 else:
                     callbacks.append(sink.write)
             else:
-                raise ValueError(f'Unknown sink type {type(sink)} for {sink}')
+                raise ValueError(f"Unknown sink type {type(sink)} for {sink}")
         return tuple(callbacks)
 
     def as_callbacks(
-        self,
-        flush: bool = True,
+        self, flush: bool = True,
     ) -> Tuple[Optional[Tuple[TSink, ...]], ...]:
         """Convert all sinks to their callbacks."""
         return tuple(self._to_callback(sinks, flush=flush) for sinks in self)

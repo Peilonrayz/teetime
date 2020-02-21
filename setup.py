@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 from setuptools import find_packages, setup
 
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
+
 with open("README.rst") as f:
     LONG_DESCRIPTION = f.read()
 
+config = configparser.ConfigParser()
+config.read("setup.cfg")
+
 setup(
     name="teetime",
-    version="0.0.2",
+    version=config.get("src", "version"),
     license="MIT",
     description="Add tee like functionally to Popen",
     long_description=LONG_DESCRIPTION,
@@ -31,6 +39,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
