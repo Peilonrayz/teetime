@@ -11,6 +11,7 @@ def coverage(session):
     session.install("pytest", "pytest-cov")
     session.run(
         "pytest",
+        # "-v",
         "--cov=src",
         "--cov-append",
         "--cov-config",

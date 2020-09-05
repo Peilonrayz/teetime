@@ -8,10 +8,53 @@ import tempfile
 import teetime
 
 CWD = os.path.dirname(os.path.abspath(__file__))
+SEP = b'\n'  # Windows is b'\r\n'
+
+
+class PeekIter:
+    def __init__(self, values):
+        self.values = iter(values)
+        self.peek = next(self.values, None)
+    
+    def next(self):
+        if self.peek is None:
+            raise StopIteration()
+        value = self.peek
+        self.peek = next(self.values, None)
+        return value
+
+
+def order(expected, *peekers):
+    for item in expected:
+        for peeker in peekers:
+            if peeker.peek == item:
+                yield peeker.next()
+                break
+        else:
+            for peeker in peekers:
+                if peeker.peek is not None:
+                    yield peeker.next()
+                    break
+            else:
+                return
+
+
+def build_output(expected, *values, sep=SEP, ext=[b""]):
+    _order = order(
+        expected.split(sep),
+        *(
+            PeekIter(value)
+            for value in values
+        ),
+    )
+    return sep.join(list(_order) + ext)
 
 
 def test_basic():
     """Basic test."""
+    STD_OUT = [b"lHl o!lreo", b"!", b"oWd H", b"lHlWd", b"!l"]
+    STD_ERR = [b"doWlloHer", b"HlWd", b"delWlHlor", b" olrdl!He", b"HolWlloe"]
+
     with tempfile.TemporaryFile() as fout, tempfile.TemporaryFile() as ferr, tempfile.TemporaryFile() as fboth:
         process = teetime.popen_call(
             ["python", os.path.join(CWD, "test.py")],
@@ -20,14 +63,10 @@ def test_basic():
         )
         process.wait()
 
-        assert fout.read() == (b"lHl o!lreo\r\n!\r\noWd H\r\nlHlWd\r\n!l\r\n")
-        assert ferr.read() == (
-            b"doWlloHer\r\nHlWd\r\ndelWlHlor\r\n olrdl!He\r\nHolWlloe\r\n"
-        )
-        assert fboth.read() == (
-            b"doWlloHer\r\nHlWd\r\nlHl o!lreo\r\n!\r\noWd H\r\n"
-            b"lHlWd\r\ndelWlHlor\r\n olrdl!He\r\nHolWlloe\r\n!l\r\n"
-        )
+        assert fout.read() == SEP.join(STD_OUT + [b""])
+        assert ferr.read() == SEP.join(STD_ERR + [b""])
+        both = fboth.read()
+        assert both == build_output(both, STD_OUT, STD_ERR)
 
 
 def _iter_queue(q):
@@ -44,14 +83,14 @@ def test_queue():
     process.wait()
 
     assert list(_iter_queue(q)) == [
-        b"doWlloHer\r\n",
-        b"HlWd\r\n",
-        b"lHl o!lreo\r\n",
-        b"!\r\n",
-        b"oWd H\r\n",
-        b"lHlWd\r\n",
-        b"delWlHlor\r\n",
-        b" olrdl!He\r\n",
-        b"HolWlloe\r\n",
-        b"!l\r\n",
+        b"doWlloHer\n",
+        b"HlWd\n",
+        b"lHl o!lreo\n",
+        b"!\n",
+        b"oWd H\n",
+        b"lHlWd\n",
+        b"delWlHlor\n",
+        b" olrdl!He\n",
+        b"HolWlloe\n",
+        b"!l\n",
     ]
