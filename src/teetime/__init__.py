@@ -281,7 +281,7 @@ class Sinks(_Sinks):
 
     @staticmethod
     def _to_callback(
-        sinks: Optional[List[Any]], flush: bool = True, closable: bool = True,
+        sinks: Optional[List[Any]], flush: bool = True,
     ) -> Optional[Tuple[TSink, ...]]:
         """Convert sinks to a callback."""
         if sinks is None:
@@ -294,7 +294,7 @@ class Sinks(_Sinks):
                 write = sink.write
                 if flush and hasattr(sink, "flush"):
                     write = _flushed_write(sink)
-                if closable and (hasattr(sink, "writable") or hasattr(sink, "closed")):
+                if hasattr(sink, "writable") or hasattr(sink, "closed"):
                     write = _closable_write(write)
                 callbacks.append(write)
             else:
@@ -302,10 +302,10 @@ class Sinks(_Sinks):
         return tuple(callbacks)
 
     def as_callbacks(
-        self, flush: bool = True, closable: bool = True,
+        self, flush: bool = True,
     ) -> Tuple[Optional[Tuple[TSink, ...]], ...]:
         """Convert all sinks to their callbacks."""
-        return tuple(self._to_callback(sinks, flush=flush, closable=closable) for sinks in self)
+        return tuple(self._to_callback(sinks, flush=flush) for sinks in self)
 
 
 def popen_call(*args, stdout=None, stderr=None, **kwargs) -> subprocess.Popen:
