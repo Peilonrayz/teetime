@@ -173,6 +173,20 @@ def _flushed_write(sink: Any) -> TSink:
     return write
 
 
+def _closable_write(write_func: Callable[[bytes], ...]) -> TSink:
+    """Try to write, but fail silently if the file is already closed."""
+
+    def write(value: bytes) -> None:
+        try:
+            write_func(value)
+        except ValueError:
+            # the file is already closed
+            pass
+
+    return write
+
+
+
 class Sinks(_Sinks):
     """
     Ease creation and usage of sinks.
@@ -267,7 +281,7 @@ class Sinks(_Sinks):
 
     @staticmethod
     def _to_callback(
-        sinks: Optional[List[Any]], flush: bool = True,
+        sinks: Optional[List[Any]], flush: bool = True, closable: bool = True,
     ) -> Optional[Tuple[TSink, ...]]:
         """Convert sinks to a callback."""
         if sinks is None:
@@ -277,19 +291,21 @@ class Sinks(_Sinks):
             if isinstance(sink, queue.Queue):
                 callbacks.append(sink.put)
             elif hasattr(sink, "write"):
+                write = sink.write
                 if flush and hasattr(sink, "flush"):
-                    callbacks.append(_flushed_write(sink))
-                else:
-                    callbacks.append(sink.write)
+                    write = _flushed_write(sink)
+                if closable and (hasattr(sink, "writable") or hasattr(sink, "closed")):
+                    write = _closable_write(write)
+                callbacks.append(write)
             else:
                 raise ValueError(f"Unknown sink type {type(sink)} for {sink}")
         return tuple(callbacks)
 
     def as_callbacks(
-        self, flush: bool = True,
+        self, flush: bool = True, closable: bool = True,
     ) -> Tuple[Optional[Tuple[TSink, ...]], ...]:
         """Convert all sinks to their callbacks."""
-        return tuple(self._to_callback(sinks, flush=flush) for sinks in self)
+        return tuple(self._to_callback(sinks, flush=flush, closable=closable) for sinks in self)
 
 
 def popen_call(*args, stdout=None, stderr=None, **kwargs) -> subprocess.Popen:
