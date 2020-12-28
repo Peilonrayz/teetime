@@ -4,7 +4,7 @@ from pprint import pprint
 import nox
 
 
-@nox.session(python=["3.8", "3.7"])
+@nox.session(python=["3.9", "3.8", "3.7"])
 def coverage(session):
     session.install("coverage>=5.0.0")
     session.install("-e", ".")
